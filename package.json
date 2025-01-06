@@ -1,21 +1,49 @@
 {
-  "name": "snippetcraft",
-  "displayName": "SnippetCraft",
-  "description": "Crafting Code Snippets Made Simple",
+  "name": "snippetvault",
+  "displayName": "SnippetVault",
+  "description": "Crafting and saving Code Snippets Made Simple",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
   },
+"repository": {
+  "type": "git",
+  "url": "https://github.com/R-adi/snippetvault"
+},
+
+
+  "publisher": "snippet-vault",
+  "icon": "./assets/snippetvault_logo.png",
+
+
   "categories": [
-    "Other"
+    "Snippets"
+  ],
+  "keywords": [
+    "snippets",
+    "code snippets",
+    "productivity",
+    "reusable code",
+    "snippet storage"
   ],
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "snippetcraft.helloWorld",
-      "title": "Hello World"
-    }]
+    "commands": [
+      
+      {
+        "command": "extension.addSnippet",
+        "title": "add snippet"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.addSnippet",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",

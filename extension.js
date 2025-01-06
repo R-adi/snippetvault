@@ -1,36 +1,185 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-const vscode = require('vscode');
+const vscode = require("vscode");
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+//  snippets in memory
+let snippetMap = new Map();
 
-/**
- * @param {vscode.ExtensionContext} context
- */
 function activate(context) {
+  loadSnippetsFromGlobalStorage(context);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "snippetcraft" is now active!');
+  // Register the 'add snippet' command
+  let addSnippetDisposable = vscode.commands.registerCommand(
+    "extension.addSnippet",
+    () => {
+      const panel = vscode.window.createWebviewPanel(
+        "snippetInput",
+        "Add New Snippet",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+        }
+      );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('snippetcraft.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+      panel.webview.html = getWebviewContent();
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from SnippetCraft!');
-	});
+      panel.webview.onDidReceiveMessage(
+        (message) => {
+          switch (message.command) {
+            case "saveSnippet":
+              saveSnippet(message.shortcut, message.code, context);
+              vscode.window.showInformationMessage(
+                `Snippet saved with shortcut: ${message.shortcut}`
+              );
+              panel.dispose();
+              return;
+          }
+        },
+        undefined,
+        context.subscriptions
+      );
+    }
+  );
 
-	context.subscriptions.push(disposable);
+  // Register completion provider for snippets
+  let completionProvider = vscode.languages.registerCompletionItemProvider(
+    "*", // Register for all file types
+    {
+      provideCompletionItems(document, position) {
+        const completions = [];
+        for (const [shortcut, code] of snippetMap.entries()) {
+          const completion = new vscode.CompletionItem(shortcut);
+          completion.insertText = code;
+          completion.detail = "Code Snippet";
+          completion.documentation = new vscode.MarkdownString(code);
+          completion.kind = vscode.CompletionItemKind.Snippet;
+          completions.push(completion);
+        }
+        return completions;
+      },
+    }
+  );
+
+  context.subscriptions.push(addSnippetDisposable);
+  context.subscriptions.push(completionProvider);
 }
 
-// This method is called when your extension is deactivated
+function saveSnippet(shortcut, code, context) {
+  snippetMap.set(shortcut, code);
+  
+  // Save to global storage
+  const snippetData = Array.from(snippetMap.entries());
+  context.globalState.update("snippets", snippetData);
+}
+
+function loadSnippetsFromGlobalStorage(context) {
+  const savedSnippets = context.globalState.get("snippets", []);
+  savedSnippets.forEach(([shortcut, code]) => {
+    snippetMap.set(shortcut, code);
+  });
+}
+
+function getWebviewContent() {
+  return `<!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+                body {
+                    padding: 20px;
+                    font-family: sans-serif;
+					
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                textarea {
+                    width: 100%;
+                    height: 200px;
+                    margin-bottom: 20px;
+                    padding: 10px;
+                }
+                input {
+                    width: 100%;
+                    padding: 8px;
+                    margin-bottom: 20px;
+                }
+                button {
+                    background-color: #007acc;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    cursor: pointer;
+					rounded: 5px;
+					border-radius: 5px;
+					margin-top: 10px;
+					
+                }
+                button:hover {
+                    background-color: #005999;
+					pointer: cursor;
+                }
+                label {
+                    display: block;
+                    margin-bottom: 8px;
+					font-family: arial;
+					gap: 10px;
+					font-size: semi-bold;
+                }
+                .hint {
+                    color: #666;
+                    margin-top: 5px;
+                    font-size: 0.9em;
+					margin-bottom: 10px;
+                }
+				h2 {
+					item-align: center;
+					text-align:center;
+					justify-content: center;
+					font-family: sans-serif;
+					font-size: bold;
+				}
+			
+            </style>
+        </head>
+        <body >
+            <div class="container">
+                <h2>Add New Code Snippet</h2>
+                <div>
+                    <label>Enter your code snippet:</label>
+                    <textarea style="height-full width-full" id="snippetCode" placeholder="Enter your code here..."></textarea>
+                </div>
+                <div>
+                    <label>Enter shortcut:( Try to give Unique name to your shortcut)</label>
+                    <input type="text" id="shortcut" placeholder="e.g., mysnippet">
+                    <div class="hint">Start typing this shortcut in your code to see snippet suggestions</div>
+                </div>
+                <button onclick="saveSnippet()">Save Snippet</button>
+            </div>
+
+            <script>
+                function saveSnippet() {
+                    const code = document.getElementById('snippetCode').value;
+                    const shortcut = document.getElementById('shortcut').value;
+                    
+                    if (!code || !shortcut) {
+                        alert('Please fill in both fields');
+                        return;
+                    }
+
+                    const vscode = acquireVsCodeApi();
+                    vscode.postMessage({
+                        command: 'saveSnippet',
+                        code: code,
+                        shortcut: shortcut
+                    });
+                }
+            </script>
+        </body>
+    </html>`;
+}
+
 function deactivate() {}
 
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+  deactivate,
+};

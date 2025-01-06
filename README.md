@@ -1,65 +1,69 @@
-# snippetcraft README
+# SnippetVault
 
-This is the README for your extension "snippetcraft". After writing up a brief description, we recommend including the following sections.
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+SnippetVault is a VS Code extension that allows you to create, save, and use custom code snippets across all your projects. With SnippetVault, you can streamline your development process by quickly inserting reusable code blocks via custom shortcuts.
 
 ---
 
-## Working with Markdown
+## Features
+- **Create Custom Snippets**: Save your frequently used code snippets with a custom shortcut.
+- **Global Persistence**: Your snippets are available across all projects, even after restarting VS Code.
+- **Easy Access**: Start typing the shortcut, and your snippet will appear as a suggestion.
+- **Rich Documentation**: View snippet details and documentation while coding.
 
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+---
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
+## How to Use SnippetVault
 
-## For more information
+### Installation
+1. Clone or download the SnippetVault repository.
+2. Open the project folder in VS Code.
+3. Run the command `npm install` (if dependencies are required).
+4. Press `F5` to start the extension in a new Extension Development Host window.
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+### Adding a Snippet
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) to open the Command Palette.
+2. Search for and select **SnippetVault: add Snippet**.
+3. instead you can Press `Ctrl+Shift+N` (or `Cmd+Shift+N` on Mac) to use the Extension .
+4. A webview will open:
+   - Enter your code snippet in the provided text area.
+   - Enter a unique shortcut for the snippet.
+   - Click the "Save Snippet" button.
+5. You will see a confirmation message in the bottom indicating that your snippet was saved.
 
-**Enjoy!**
+![SnippetVault Preview](./assets/snippetvault.png)
+
+
+### Using Snippets
+1. Open any file in VS Code.
+2. Start typing the shortcut you assigned to your snippet.
+3. The snippet will appear in the IntelliSense suggestions.
+4. Press `Enter` or `Tab` to insert the snippet into your code.
+
+### Editing or Deleting Snippets
+Currently, editing or deleting snippets is not supported directly from the extension. However, you can manually edit or remove snippets from the global storage file if needed.
+
+---
+
+## Development
+
+### Prerequisites
+- Node.js
+- Visual Studio Code
+
+---
+
+## Future Enhancements
+- **Snippet Management**: Add options to edit and delete saved snippets.
+- **Export/Import Snippets**: Allow users to export and import snippets to/from JSON files.
+- **Cloud Sync**: Enable syncing snippets across devices.
+
+---
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+## Support
+For any issues or feature requests, please create an issue in the GitHub repository or contact the project maintainer.
+

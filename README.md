@@ -22,7 +22,7 @@ SnippetVault is a VS Code extension that allows you to create, save, and use cus
 
 ### Adding a Snippet
 1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) to open the Command Palette.
-2. Search for and select **SnippetVault: add Snippet**.
+2. Search for and select **SnippetVault: add snippet**.
 3. instead you can Press `Ctrl+Shift+N` (or `Cmd+Shift+N` on Mac) to use the Extension .
 4. A webview will open:
    - Enter your code snippet in the provided text area.

@@ -6,10 +6,10 @@ const path = require("path");
 let snippetMap = new Map();
 
 function activate(context) {
-  // Load snippets from global storage
+
   loadSnippetsFromGlobalStorage(context);
 
-  // Register the 'add snippet' command
+  
   let addSnippetDisposable = vscode.commands.registerCommand(
     "extension.addSnippet",
     () => {
@@ -26,7 +26,7 @@ function activate(context) {
 
       panel.webview.onDidReceiveMessage(
         (message) => {
-          console.log(message); // Debugging line to see the message content
+          console.log(message);
           switch (message.command) {
             case "saveSnippet":
               console.log(
@@ -50,8 +50,8 @@ function activate(context) {
     }
   );
 
-  // Register completion provider for multiple languages dynamically
-  vscode.languages.getLanguages().then((languages) => {  // Fetch all supported languages
+  
+  vscode.languages.getLanguages().then((languages) => {  
 
   languages.forEach((language) => {
     const provider = vscode.languages.registerCompletionItemProvider(
@@ -71,11 +71,21 @@ function activate(context) {
 }
 
 function saveSnippetToGlobalFile(shortcut, code, language) {
-  const globalSnippetsFilePath = path.join(
+  
+  const snippetsFolderPath = path.join(
     vscode.env.appRoot,
-    "..",
+    "..", 
     "User",
-    "snippets",
+    "snippets"
+  );
+
+ 
+  if (!fs.existsSync(snippetsFolderPath)) {
+    fs.mkdirSync(snippetsFolderPath, { recursive: true });
+  }
+
+  const globalSnippetsFilePath = path.join(
+    snippetsFolderPath,
     `${language}.code-snippets`
   );
 
@@ -101,6 +111,7 @@ function saveSnippetToGlobalFile(shortcut, code, language) {
     console.error("Error saving snippet:", error);
   }
 }
+
 
 function provideDynamicCompletions(language) {
   const globalSnippetsFilePath = path.join(

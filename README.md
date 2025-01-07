@@ -6,6 +6,7 @@ SnippetVault is a VS Code extension that allows you to create, save, and use cus
 
 ## Features
 - **Create Custom Snippets**: Save your frequently used code snippets with a custom shortcut.
+- **Multiple Language Support**: Java, Python, C++, JavaScript, Jsx, Ruby, Rust, PHP, Kotlin and many more.
 - **Global Persistence**: Your snippets are available across all projects, even after restarting VS Code.
 - **Easy Access**: Start typing the shortcut, and your snippet will appear as a suggestion.
 - **Rich Documentation**: View snippet details and documentation while coding.

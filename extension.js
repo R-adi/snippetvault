@@ -1,9 +1,12 @@
 const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
 
-//  snippets in memory
+// Snippets in memory
 let snippetMap = new Map();
 
 function activate(context) {
+  // Load snippets from global storage
   loadSnippetsFromGlobalStorage(context);
 
   // Register the 'add snippet' command
@@ -23,11 +26,19 @@ function activate(context) {
 
       panel.webview.onDidReceiveMessage(
         (message) => {
+          console.log(message); // Debugging line to see the message content
           switch (message.command) {
             case "saveSnippet":
-              saveSnippet(message.shortcut, message.code, context);
+              console.log(
+                `Saving snippet: ${message.shortcut}, ${message.language}`
+              );
+              saveSnippetToGlobalFile(
+                message.shortcut,
+                message.code,
+                message.language
+              );
               vscode.window.showInformationMessage(
-                `Snippet saved with shortcut: ${message.shortcut}`
+                `Snippet saved for language: ${message.language} with shortcut: ${message.shortcut}`
               );
               panel.dispose();
               return;
@@ -39,35 +50,84 @@ function activate(context) {
     }
   );
 
-  // Register completion provider for snippets
-  let completionProvider = vscode.languages.registerCompletionItemProvider(
-    "*", // Register for all file types
-    {
-      provideCompletionItems(document, position) {
-        const completions = [];
-        for (const [shortcut, code] of snippetMap.entries()) {
-          const completion = new vscode.CompletionItem(shortcut);
-          completion.insertText = code;
-          completion.detail = "Code Snippet";
-          completion.documentation = new vscode.MarkdownString(code);
-          completion.kind = vscode.CompletionItemKind.Snippet;
-          completions.push(completion);
-        }
-        return completions;
-      },
-    }
-  );
+  // Register completion provider for multiple languages dynamically
+  vscode.languages.getLanguages().then((languages) => {  // Fetch all supported languages
+
+  languages.forEach((language) => {
+    const provider = vscode.languages.registerCompletionItemProvider(
+      { language, scheme: "file" },
+      {
+        provideCompletionItems() {
+          return provideDynamicCompletions(language);
+        },
+      }
+    );
+    context.subscriptions.push(provider);
+  });
+
+  });
 
   context.subscriptions.push(addSnippetDisposable);
-  context.subscriptions.push(completionProvider);
 }
 
-function saveSnippet(shortcut, code, context) {
-  snippetMap.set(shortcut, code);
-  
-  // Save to global storage
-  const snippetData = Array.from(snippetMap.entries());
-  context.globalState.update("snippets", snippetData);
+function saveSnippetToGlobalFile(shortcut, code, language) {
+  const globalSnippetsFilePath = path.join(
+    vscode.env.appRoot,
+    "..",
+    "User",
+    "snippets",
+    `${language}.code-snippets`
+  );
+
+  let snippets = {};
+  if (fs.existsSync(globalSnippetsFilePath)) {
+    const existingData = fs.readFileSync(globalSnippetsFilePath, "utf8");
+    snippets = JSON.parse(existingData);
+  }
+
+  snippets[shortcut] = {
+    prefix: shortcut,
+    body: code.split("\n"), // Split code into an array of lines
+    description: `Snippet for ${language}`,
+  };
+
+  try {
+    fs.writeFileSync(
+      globalSnippetsFilePath,
+      JSON.stringify(snippets, null, 2)
+    );
+    console.log(`Snippet saved to: ${globalSnippetsFilePath}`);
+  } catch (error) {
+    console.error("Error saving snippet:", error);
+  }
+}
+
+function provideDynamicCompletions(language) {
+  const globalSnippetsFilePath = path.join(
+    vscode.env.appRoot,
+    "..",
+    "User",
+    "snippets",
+    `${language}.code-snippets`
+  );
+
+  if (fs.existsSync(globalSnippetsFilePath)) {
+    const data = fs.readFileSync(globalSnippetsFilePath, "utf8");
+    const snippets = JSON.parse(data);
+
+    return Object.entries(snippets).map(([shortcut, snippet]) => {
+      const completion = new vscode.CompletionItem(shortcut);
+      completion.insertText = new vscode.SnippetString(snippet.body.join("\n"));
+      completion.detail = `Snippet for ${language}`;
+      completion.documentation = new vscode.MarkdownString(
+        "```\n" + snippet.body.join("\n") + "\n```"
+      );
+      completion.kind = vscode.CompletionItemKind.Snippet;
+      return completion;
+    });
+  }
+
+  return []; // No snippets found
 }
 
 function loadSnippetsFromGlobalStorage(context) {
@@ -85,7 +145,6 @@ function getWebviewContent() {
                 body {
                     padding: 20px;
                     font-family: sans-serif;
-					
                 }
                 .container {
                     max-width: 800px;
@@ -97,7 +156,7 @@ function getWebviewContent() {
                     margin-bottom: 20px;
                     padding: 10px;
                 }
-                input {
+                input, select {
                     width: 100%;
                     padding: 8px;
                     margin-bottom: 20px;
@@ -108,60 +167,66 @@ function getWebviewContent() {
                     border: none;
                     padding: 8px 16px;
                     cursor: pointer;
-					rounded: 5px;
-					border-radius: 5px;
-					margin-top: 10px;
-					
+                    border-radius: 5px;
                 }
                 button:hover {
                     background-color: #005999;
-					pointer: cursor;
                 }
                 label {
                     display: block;
                     margin-bottom: 8px;
-					font-family: arial;
-					gap: 10px;
-					font-size: semi-bold;
                 }
                 .hint {
                     color: #666;
                     margin-top: 5px;
                     font-size: 0.9em;
-					margin-bottom: 10px;
                 }
-				h2 {
-					item-align: center;
-					text-align:center;
-					justify-content: center;
-					font-family: sans-serif;
-					font-size: bold;
-				}
-			
+                h2 {
+                    text-align: center;
+                    font-family: sans-serif;
+                }
             </style>
         </head>
-        <body >
+        <body>
             <div class="container">
                 <h2>Add New Code Snippet</h2>
                 <div>
                     <label>Enter your code snippet:</label>
-                    <textarea style="height-full width-full" id="snippetCode" placeholder="Enter your code here..."></textarea>
+                    <textarea id="snippetCode" placeholder="Enter your code here..."></textarea>
                 </div>
                 <div>
-                    <label>Enter shortcut:( Try to give Unique name to your shortcut)</label>
+                    <label>Enter shortcut (unique):</label>
                     <input type="text" id="shortcut" placeholder="e.g., mysnippet">
-                    <div class="hint">Start typing this shortcut in your code to see snippet suggestions</div>
+                    <div class="hint">Start typing this shortcut in your code to see snippet suggestions.</div>
+                </div>
+                <div>
+                    <label>Select language:</label>
+                    <select id="language">
+                      <!-- Include more languages if needed -->
+                      <option value="cpp">C++</option>
+                      <option value="javascript">JavaScript</option>
+                      <option value="typescript">TypeScript</option>
+                      <option value="python">Python</option>
+                      <option value="ruby">Ruby</option>
+                      <option value="java">Java</option>
+                      <option value="php">PHP</option>
+                      <option value="csharp">C#</option>
+                      <option value="kotlin">Kotlin</option>
+                      <option value="rust">Rust</option>
+                      <option value="css">CSS</option>
+                      <option value="jsx">JSX</option>
+                    </select>
                 </div>
                 <button onclick="saveSnippet()">Save Snippet</button>
             </div>
-
             <script>
                 function saveSnippet() {
-                    const code = document.getElementById('snippetCode').value;
-                    const shortcut = document.getElementById('shortcut').value;
+                    const code = document.getElementById('snippetCode').value.trim();
+                    const shortcut = document.getElementById('shortcut').value.trim();
+                    const language = document.getElementById('language').value;
                     
                     if (!code || !shortcut) {
-                        alert('Please fill in both fields');
+                        alert('Please fill in all fields');
                         return;
                     }
 
@@ -169,7 +234,8 @@ function getWebviewContent() {
                     vscode.postMessage({
                         command: 'saveSnippet',
                         code: code,
-                        shortcut: shortcut
+                        shortcut: shortcut,
+                        language: language
                     });
                 }
             </script>

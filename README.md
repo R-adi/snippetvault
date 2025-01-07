@@ -14,16 +14,15 @@ SnippetVault is a VS Code extension that allows you to create, save, and use cus
 
 ## How to Use SnippetVault
 
-### Installation
-1. Clone or download the SnippetVault repository.
-2. Open the project folder in VS Code.
-3. Run the command `npm install` (if dependencies are required).
-4. Press `F5` to start the extension in a new Extension Development Host window.
 
 ### Adding a Snippet
 1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) to open the Command Palette.
 2. Search for and select **SnippetVault: add snippet**.
-3. instead you can Press `Ctrl+Shift+N` (or `Cmd+Shift+N` on Mac) to use the Extension .
+         or
+3. **Windows** `Ctrl+Shift+N` 
+-
+     **mac**   `Cmd+Shift+N`  
+   
 4. A webview will open:
    - Enter your code snippet in the provided text area.
    - Enter a unique shortcut for the snippet.
@@ -60,10 +59,11 @@ Currently, editing or deleting snippets is not supported directly from the exten
 ---
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the  [MIT License](LICENSE.md) file for details.
 
 ---
 
 ## Support
 For any issues or feature requests, please create an issue in the GitHub repository or contact the project maintainer.
 
+If Liked please give Rating &#11088;
